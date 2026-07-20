@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#7d3048"
+  >
+
+  <meta
+    name="description"
+    content="An interactive anniversary date invitation."
+  >
+
+  <title>Our Anniversary Date</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=Great+Vibes&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Main CSS -->
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+<body>
+  <main id="app">
+
+    <!-- ==================================================
+         SCREEN 1: ENVELOPE
+    =================================================== -->
+
+    <section
+      class="screen active"
+      id="envelopeScreen"
+    >
+      <div class="paper-grid"></div>
+
+      <span class="floating-heart heart-one">
+        ♥
+      </span>
+
+      <span class="floating-heart heart-two">
+        ♥
+      </span>
+
+      <span class="floating-heart heart-three">
+        ♥
+      </span>
+
+      <div class="intro-content">
+        <p class="eyebrow">
+          A little anniversary surprise
+        </p>
+
+        <h1>
+          You have a letter,
+          <span data-partner-name>
+            My Love
+          </span>.
+        </h1>
+
+        <p class="intro-description">
+          Tap the envelope to open your anniversary invitation.
+        </p>
+      </div>
+
+      <button
+        class="envelope-button"
+        id="openEnvelopeBtn"
+        type="button"
+        aria-label="Open the anniversary letter"
+      >
+        <span
+          class="envelope"
+          aria-hidden="true"
+        >
+          <span class="envelope-back"></span>
+
+          <span
+            class="letter-preview"
+            id="previewLetter"
+          >
+            <span class="preview-line"></span>
+
+            <span class="preview-line short"></span>
+
+            <span class="preview-heart">
+              ♥
+            </span>
+          </span>
+
+          <span class="envelope-left"></span>
+
+          <span class="envelope-right"></span>
+
+          <span class="envelope-bottom"></span>
+
+          <span class="envelope-flap"></span>
+
+          <span class="wax-seal">
+            ♥
+          </span>
+        </span>
+
+        <span class="open-label">
+          Open me
+        </span>
+      </button>
+    </section>
+
+    <!-- ==================================================
+         SCREEN 2: LOVE LETTER
+    =================================================== -->
+
+    <section
+      class="screen"
+      id="letterScreen"
+    >
+      <div class="paper-grid"></div>
+
+      <article
+        class="love-letter"
+        id="fullLoveLetter"
+      >
+        <div class="letter-top">
+          <span>
+            For
+            <span data-partner-name>
+              My Love
+            </span>
+          </span>
+
+          <span data-anniversary-date>
+            Our Anniversary
+          </span>
+        </div>
+
+        <div class="letter-content">
+          <p class="script-heading">
+            My favorite person,
+          </p>
+
+          <h2>
+            Will you go on an anniversary date with me?
+          </h2>
+
+          <p class="letter-message">
+            I want to celebrate us with good food, a place we
+            will both enjoy, and a date planned around the things
+            that make you happiest.
+          </p>
+
+          <p class="letter-message">
+            You get to choose the details. I will take care of
+            making everything special.
+          </p>
+
+          <div
+            class="question-area"
+            id="questionArea"
+          >
+            <button
+              class="choice-button yes-button"
+              id="yesBtn"
+              type="button"
+            >
+              Yes, of course ♥
+            </button>
+
+            <button
+              class="choice-button no-button"
+              id="noBtn"
+              type="button"
+            >
+              No
+            </button>
+          </div>
+
+          <p
+            class="tiny-note"
+            id="tinyNote"
+          >
+            Choose wisely. One button is a little shy.
+          </p>
+
+          <div class="signature">
+            <span>
+              Always yours,
+            </span>
+
+            <strong data-your-name>
+              Your Name
+            </strong>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ==================================================
+         LOVE VIRUS
+    =================================================== -->
+
+    <section
+      class="virus-overlay"
+      id="virusOverlay"
+      aria-hidden="true"
+    >
+      <div class="virus-window">
+        <div class="virus-titlebar">
+          <span>
+            LOVE_PROTOCOL.exe
+          </span>
+
+          <span>
+            ♥
+          </span>
+        </div>
+
+        <div class="virus-content">
+          <div class="warning-heart">
+            ♥
+          </div>
+
+          <h2>
+            Love virus detected!
+          </h2>
+
+          <p class="virus-description">
+            The “No” response is incompatible with this
+            anniversary invitation.
+          </p>
+
+          <div class="terminal">
+            <p>&gt; scanning selected answer...</p>
+            <p>&gt; locating affection...</p>
+            <p>&gt; impossible response detected...</p>
+            <p>&gt; repairing romantic decision...</p>
+          </div>
+
+          <div class="virus-progress">
+            <span id="virusProgressBar"></span>
+          </div>
+
+          <p
+            class="virus-status"
+            id="virusStatus"
+          >
+            Repairing answer...
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================
+         SCREEN 3: DATE KIOSK
+    =================================================== -->
+
+    <section
+      class="screen kiosk-screen"
+      id="kioskScreen"
+    >
+      <div class="kiosk-shell">
+
+        <header class="kiosk-header">
+          <div class="kiosk-heading-copy">
+            <p class="eyebrow">
+              Anniversary Date Kiosk
+            </p>
+
+            <h1>
+              Let’s build our perfect date.
+            </h1>
+
+            <p>
+              Pick one option for every step. Your choices will
+              appear on the final anniversary ticket.
+            </p>
+
+            <p class="submission-notice">
+              Once you finish, your choices will be sent to me
+              so I can plan our date. ♥
+            </p>
+          </div>
+
+          <div class="kiosk-badge">
+            <span>
+              DATE
+            </span>
+
+            <strong>
+              ♥
+            </strong>
+
+            <span>
+              PASS
+            </span>
+          </div>
+        </header>
+
+        <div class="progress-wrapper">
+          <div class="progress-labels">
+            <span id="stepLabel">
+              Step 1 of 5
+            </span>
+
+            <span id="categoryLabel">
+              Food
+            </span>
+          </div>
+
+          <div class="progress-track">
+            <span id="kioskProgress"></span>
+          </div>
+        </div>
+
+        <div class="kiosk-panel">
+          <div class="category-heading">
+            <p
+              class="step-number"
+              id="stepNumber"
+            >
+              01
+            </p>
+
+            <div>
+              <h2 id="categoryTitle">
+                What should we eat?
+              </h2>
+
+              <p id="categorySubtitle">
+                Choose the food that sounds best for our date.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="option-grid"
+            id="optionGrid"
+          ></div>
+
+          <div class="kiosk-controls">
+            <button
+              class="secondary-button"
+              id="backBtn"
+              type="button"
+            >
+              Back
+            </button>
+
+            <button
+              class="primary-button"
+              id="nextBtn"
+              type="button"
+              disabled
+            >
+              Next choice
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================
+         SCREEN 4: FINAL TICKET
+    =================================================== -->
+
+    <section
+      class="screen final-screen"
+      id="finalScreen"
+    >
+      <div class="paper-grid"></div>
+
+      <div class="final-card">
+        <header class="final-heading">
+          <p class="eyebrow">
+            It is officially a date
+          </p>
+
+          <h1>
+            Our Anniversary Date Ticket
+          </h1>
+
+          <p>
+            Selected with love by
+            <span data-partner-name>
+              My Love
+            </span>.
+          </p>
+        </header>
+
+        <div class="ticket">
+          <aside class="ticket-stub">
+            <span>
+              ADMIT
+            </span>
+
+            <strong>
+              TWO
+            </strong>
+
+            <small>
+              ANNIVERSARY EDITION
+            </small>
+          </aside>
+
+          <div class="ticket-main">
+            <div class="ticket-topline">
+              <span>
+                OUR DATE PLAN
+              </span>
+
+              <span>
+                ♥ VALID FOREVER
+              </span>
+            </div>
+
+            <div
+              class="summary-grid"
+              id="summaryGrid"
+            ></div>
+
+            <footer class="ticket-footer">
+              <div>
+                <span>
+                  Invited by
+                </span>
+
+                <strong data-your-name>
+                  Your Name
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Guest of honor
+                </span>
+
+                <strong data-partner-name>
+                  My Love
+                </strong>
+              </div>
+            </footer>
+          </div>
+        </div>
+
+        <div class="final-actions">
+          <button
+            class="primary-button"
+            id="shareBtn"
+            type="button"
+          >
+            Share my choices
+          </button>
+
+          <button
+            class="secondary-button"
+            id="restartBtn"
+            type="button"
+          >
+            Choose again
+          </button>
+        </div>
+
+        <p
+          class="email-status"
+          id="emailStatus"
+          aria-live="polite"
+        ></p>
+
+        <p
+          class="copy-status"
+          id="copyStatus"
+          aria-live="polite"
+        ></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Letter transition -->
+  <div
+    class="letter-transition-layer"
+    id="letterTransitionLayer"
+    aria-hidden="true"
+  ></div>
+
+  <!-- Heart confetti -->
+  <div
+    class="heart-confetti"
+    id="heartConfetti"
+    aria-hidden="true"
+  ></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
