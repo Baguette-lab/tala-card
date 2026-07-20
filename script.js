@@ -9,18 +9,18 @@ const CONFIG = {
 };
 
 
-const EMAIL_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbxV5t3FPTzhohgQG465pbWhAl2z3-tYfjcAou9JOS6sYkeHFoe2nkHEI8mtClEacqEu/exec";
+/* ==================================================
+   GOOGLE APPS SCRIPT
+================================================== */
 
-/*
-This must match FORM_KEY inside Code.gs.
-*/
+const EMAIL_ENDPOINT =
+  "https://script.google.com/macros/s/AKfycbxPNYIO9_Gt2hZ-9RqKynQETwRYv8jrYgKbQ7_i4Hsu8wyDJd-4rIa9uh59zXTqwmTN/exec";
 
 const EMAIL_FORM_KEY =
   "anniversary-date-card-v1";
 
 /* ==================================================
-   DATE KIOSK OPTIONS
+   DATE OPTIONS
 ================================================== */
 
 const dateCategories = [
@@ -372,11 +372,40 @@ const shareBtn =
 const restartBtn =
   document.getElementById("restartBtn");
 
+const replayEndingBtn =
+  document.getElementById("replayEndingBtn");
+
+const musicToggleBtn =
+  document.getElementById("musicToggleBtn");
+
 const copyStatus =
   document.getElementById("copyStatus");
 
 const emailStatus =
   document.getElementById("emailStatus");
+
+const finalTicket =
+  document.getElementById("finalTicket");
+
+const cinematicOverlay =
+  document.getElementById("cinematicOverlay");
+
+const cinematicKicker =
+  document.getElementById("cinematicKicker");
+
+const cinematicLines =
+  document.querySelectorAll(
+    "[data-cinematic-line]"
+  );
+
+const cinematicSealStage =
+  document.getElementById("cinematicSealStage");
+
+const cinematicFinalCaption =
+  document.getElementById("cinematicFinalCaption");
+
+const endingMusic =
+  document.getElementById("endingMusic");
 
 const heartConfetti =
   document.getElementById("heartConfetti");
@@ -399,10 +428,28 @@ let resultsSent = false;
 
 let currentSubmissionId = "";
 
+let cinematicRunning = false;
+
+let endingHasPlayed = false;
+
+let musicStarted = false;
+
+let musicWasPrepared = false;
+
 const selections = {};
 
 /* ==================================================
-   APPLY PERSONAL DETAILS
+   HELPERS
+================================================== */
+
+function wait(milliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
+
+/* ==================================================
+   PERSONAL DETAILS
 ================================================== */
 
 function applyPersonalDetails() {
@@ -451,7 +498,7 @@ function showScreen(targetScreen) {
 }
 
 /* ==================================================
-   ENVELOPE TRANSITION
+   ENVELOPE
 ================================================== */
 
 openEnvelopeBtn.addEventListener(
@@ -517,7 +564,7 @@ function animateLetterPopOut() {
 
   previewLetter.style.opacity = "0";
 
-  const targetRectangle =
+  const target =
     getFullLetterTargetRectangle();
 
   requestAnimationFrame(() => {
@@ -527,22 +574,19 @@ function animateLetterPopOut() {
       );
 
       floatingLetter.style.left =
-        `${targetRectangle.left}px`;
+        `${target.left}px`;
 
       floatingLetter.style.top =
-        `${targetRectangle.top}px`;
+        `${target.top}px`;
 
       floatingLetter.style.width =
-        `${targetRectangle.width}px`;
+        `${target.width}px`;
 
       floatingLetter.style.height =
-        `${targetRectangle.height}px`;
+        `${target.height}px`;
 
       floatingLetter.style.transform =
         "rotate(0deg)";
-
-      floatingLetter.style.borderRadius =
-        "5px";
     });
   });
 
@@ -553,7 +597,8 @@ function animateLetterPopOut() {
 
     showScreen(letterScreen);
 
-    floatingLetter.style.opacity = "0";
+    floatingLetter.style.opacity =
+      "0";
   }, 850);
 
   setTimeout(() => {
@@ -563,12 +608,10 @@ function animateLetterPopOut() {
 
     envelopeTransitionRunning = false;
 
-    setTimeout(() => {
-      letterScreen.classList.remove(
-        "letter-reveal"
-      );
-    }, 500);
-  }, 1120);
+    letterScreen.classList.remove(
+      "letter-reveal"
+    );
+  }, 1150);
 }
 
 function getFullLetterTargetRectangle() {
@@ -590,30 +633,22 @@ function getFullLetterTargetRectangle() {
 
   const availableHeight =
     window.innerHeight -
-    verticalPadding * 2;
+      verticalPadding * 2;
 
   const targetHeight =
-    isMobile
-      ? Math.min(
-          690,
-          Math.max(
-            480,
-            availableHeight
-          )
-        )
-      : Math.min(
-          650,
-          Math.max(
-            520,
-            availableHeight
-          )
-        );
+    Math.min(
+      650,
+      Math.max(
+        480,
+        availableHeight
+      )
+    );
 
   return {
     left:
       (
         window.innerWidth -
-        targetWidth
+          targetWidth
       ) / 2,
 
     top:
@@ -621,7 +656,7 @@ function getFullLetterTargetRectangle() {
         verticalPadding,
         (
           window.innerHeight -
-          targetHeight
+            targetHeight
         ) / 2
       ),
 
@@ -685,36 +720,36 @@ function moveNoButton() {
   const yesRectangle =
     yesBtn.getBoundingClientRect();
 
-  const yesLeftInsideArea =
+  const yesLeft =
     yesRectangle.left -
-    areaRectangle.left;
+      areaRectangle.left;
 
-  const yesTopInsideArea =
+  const yesTop =
     yesRectangle.top -
-    areaRectangle.top;
+      areaRectangle.top;
 
-  const overlapsYesButton =
+  const overlapsYes =
     newLeft <
-      yesLeftInsideArea +
-      yesRectangle.width +
-      25 &&
+      yesLeft +
+        yesRectangle.width +
+        25 &&
 
     newLeft +
       buttonRectangle.width >
-      yesLeftInsideArea -
-      25 &&
+      yesLeft -
+        25 &&
 
     newTop <
-      yesTopInsideArea +
-      yesRectangle.height +
-      25 &&
+      yesTop +
+        yesRectangle.height +
+        25 &&
 
     newTop +
       buttonRectangle.height >
-      yesTopInsideArea -
-      25;
+      yesTop -
+        25;
 
-  if (overlapsYesButton) {
+  if (overlapsYes) {
     newTop =
       newTop <
       areaRectangle.height / 2
@@ -734,41 +769,29 @@ function moveNoButton() {
 
   const messages = [
     "Nope. That button is avoiding commitment.",
-
     "Almost! The No button escaped again.",
-
     "This invitation only accepts romantic answers.",
-
     "The No button has entered witness protection.",
-
     "That button really does not want to be pressed.",
-
     "Still trying? I admire the determination.",
-
     "The No button said: not today.",
-
     "It appears that Yes is much easier.",
-
     "You were close. Very close.",
-
     "No remains unavailable for emotional reasons."
   ];
 
-  const messageIndex =
-    (
-      noEscapeCount - 1
-    ) %
-    messages.length;
-
   tinyNote.textContent =
-    messages[messageIndex];
+    messages[
+      (noEscapeCount - 1) %
+        messages.length
+    ];
 
   setTimeout(() => {
     noButtonMoving = false;
   }, 145);
 }
 
-/* Desktop cursor detection */
+/* Desktop */
 
 questionArea.addEventListener(
   "pointermove",
@@ -787,47 +810,36 @@ questionArea.addEventListener(
       return;
     }
 
-    const buttonRectangle =
+    const rectangle =
       noBtn.getBoundingClientRect();
 
     const escapeDistance = 82;
 
     const nearestX =
       Math.max(
-        buttonRectangle.left,
+        rectangle.left,
         Math.min(
           event.clientX,
-          buttonRectangle.right
+          rectangle.right
         )
       );
 
     const nearestY =
       Math.max(
-        buttonRectangle.top,
+        rectangle.top,
         Math.min(
           event.clientY,
-          buttonRectangle.bottom
+          rectangle.bottom
         )
       );
 
-    const distanceX =
-      event.clientX -
-      nearestX;
-
-    const distanceY =
-      event.clientY -
-      nearestY;
-
     const distance =
-      Math.sqrt(
-        distanceX * distanceX +
-        distanceY * distanceY
+      Math.hypot(
+        event.clientX - nearestX,
+        event.clientY - nearestY
       );
 
-    if (
-      distance <
-      escapeDistance
-    ) {
+    if (distance < escapeDistance) {
       moveNoButton();
     }
   }
@@ -845,7 +857,7 @@ noBtn.addEventListener(
   }
 );
 
-/* Mobile touch detection */
+/* Mobile */
 
 questionArea.addEventListener(
   "touchstart",
@@ -864,44 +876,33 @@ questionArea.addEventListener(
       return;
     }
 
-    const buttonRectangle =
+    const rectangle =
       noBtn.getBoundingClientRect();
 
-    const nearbyDistance = 48;
+    const distance = 48;
 
-    const directlyInsideButton =
+    const directlyInside =
+      touch.clientX >= rectangle.left &&
+      touch.clientX <= rectangle.right &&
+      touch.clientY >= rectangle.top &&
+      touch.clientY <= rectangle.bottom;
+
+    const nearby =
       touch.clientX >=
-        buttonRectangle.left &&
+        rectangle.left - distance &&
 
       touch.clientX <=
-        buttonRectangle.right &&
+        rectangle.right + distance &&
 
       touch.clientY >=
-        buttonRectangle.top &&
+        rectangle.top - distance &&
 
       touch.clientY <=
-        buttonRectangle.bottom;
-
-    const touchedNearButton =
-      touch.clientX >=
-        buttonRectangle.left -
-        nearbyDistance &&
-
-      touch.clientX <=
-        buttonRectangle.right +
-        nearbyDistance &&
-
-      touch.clientY >=
-        buttonRectangle.top -
-        nearbyDistance &&
-
-      touch.clientY <=
-        buttonRectangle.bottom +
-        nearbyDistance;
+        rectangle.bottom + distance;
 
     if (
-      touchedNearButton &&
-      !directlyInsideButton
+      nearby &&
+      !directlyInside
     ) {
       moveNoButton();
     }
@@ -910,8 +911,6 @@ questionArea.addEventListener(
     passive: true
   }
 );
-
-/* Successful click triggers the virus */
 
 noBtn.addEventListener(
   "click",
@@ -937,11 +936,6 @@ function triggerLoveVirus() {
     "active"
   );
 
-  virusOverlay.setAttribute(
-    "aria-hidden",
-    "false"
-  );
-
   document.body.style.overflow =
     "hidden";
 
@@ -965,13 +959,7 @@ function triggerLoveVirus() {
       "active"
     );
 
-    virusOverlay.setAttribute(
-      "aria-hidden",
-      "true"
-    );
-
-    document.body.style.overflow =
-      "";
+    document.body.style.overflow = "";
 
     noBtn.hidden = true;
 
@@ -984,14 +972,11 @@ function triggerLoveVirus() {
 
     virusProgressBar.style.width =
       "0";
-
-    virusStatus.textContent =
-      "Repairing answer...";
   }, 2900);
 }
 
 /* ==================================================
-   YES BUTTON
+   YES
 ================================================== */
 
 yesBtn.addEventListener(
@@ -1010,7 +995,7 @@ yesBtn.addEventListener(
 );
 
 /* ==================================================
-   RENDER KIOSK
+   KIOSK
 ================================================== */
 
 function renderCurrentStep() {
@@ -1026,17 +1011,15 @@ function renderCurrentStep() {
   categoryLabel.textContent =
     category.label;
 
-  const progressPercentage =
-    (
-      (
-        currentStep + 1
-      ) /
-      dateCategories.length
-    ) *
-    100;
-
   kioskProgress.style.width =
-    `${progressPercentage}%`;
+    `${
+      (
+        (
+          currentStep + 1
+        ) /
+        dateCategories.length
+      ) * 100
+    }%`;
 
   stepNumber.textContent =
     String(
@@ -1056,29 +1039,27 @@ function renderCurrentStep() {
 
   category.options.forEach(
     (option) => {
-      const optionButton =
+      const button =
         document.createElement(
           "button"
         );
 
-      optionButton.type =
-        "button";
+      button.type = "button";
 
-      optionButton.className =
+      button.className =
         "option-card";
 
-      const isSelected =
+      if (
         selectedOption &&
         selectedOption.name ===
-        option.name;
-
-      if (isSelected) {
-        optionButton.classList.add(
+          option.name
+      ) {
+        button.classList.add(
           "selected"
         );
       }
 
-      optionButton.innerHTML = `
+      button.innerHTML = `
         <div class="option-image-wrapper">
           <img
             class="option-image"
@@ -1093,17 +1074,12 @@ function renderCurrentStep() {
         </div>
 
         <div class="option-copy">
-          <h3>
-            ${option.name}
-          </h3>
-
-          <p>
-            ${option.description}
-          </p>
+          <h3>${option.name}</h3>
+          <p>${option.description}</p>
         </div>
       `;
 
-      optionButton.addEventListener(
+      button.addEventListener(
         "click",
         () => {
           selections[category.key] =
@@ -1119,7 +1095,7 @@ function renderCurrentStep() {
               );
             });
 
-          optionButton.classList.add(
+          button.classList.add(
             "selected"
           );
 
@@ -1127,9 +1103,7 @@ function renderCurrentStep() {
         }
       );
 
-      optionGrid.appendChild(
-        optionButton
-      );
+      optionGrid.appendChild(button);
     }
   );
 
@@ -1138,20 +1112,18 @@ function renderCurrentStep() {
       ? "hidden"
       : "visible";
 
-  const isLastStep =
+  const isLast =
     currentStep ===
-    dateCategories.length - 1;
+      dateCategories.length - 1;
 
   nextBtn.textContent =
-    isLastStep
+    isLast
       ? "Create our date ticket"
       : "Next choice";
 
   nextBtn.disabled =
     !selectedOption;
 }
-
-/* Back */
 
 backBtn.addEventListener(
   "click",
@@ -1172,14 +1144,125 @@ backBtn.addEventListener(
 );
 
 /* ==================================================
-   EMAIL SUBMISSION
+   MUSIC
+================================================== */
+
+function prepareEndingMusic() {
+  if (musicWasPrepared) {
+    return;
+  }
+
+  musicWasPrepared = true;
+
+  endingMusic.volume = 0;
+
+  const playPromise =
+    endingMusic.play();
+
+  if (
+    playPromise &&
+    typeof playPromise.catch ===
+      "function"
+  ) {
+    playPromise
+      .then(() => {
+        musicStarted = true;
+
+        musicToggleBtn.textContent =
+          "Pause music";
+      })
+      .catch(() => {
+        musicStarted = false;
+
+        musicToggleBtn.textContent =
+          "Play music";
+      });
+  }
+}
+
+function fadeMusicIn() {
+  if (endingMusic.paused) {
+    endingMusic
+      .play()
+      .then(() => {
+        musicStarted = true;
+
+        musicToggleBtn.textContent =
+          "Pause music";
+
+        increaseMusicVolume();
+      })
+      .catch(() => {
+        musicStarted = false;
+      });
+
+    return;
+  }
+
+  increaseMusicVolume();
+}
+
+function increaseMusicVolume() {
+  let volume =
+    endingMusic.volume;
+
+  const interval =
+    setInterval(() => {
+      volume =
+        Math.min(
+          0.55,
+          volume + 0.05
+        );
+
+      endingMusic.volume =
+        volume;
+
+      if (volume >= 0.55) {
+        clearInterval(interval);
+      }
+    }, 90);
+}
+
+musicToggleBtn.addEventListener(
+  "click",
+  () => {
+    if (endingMusic.paused) {
+      endingMusic.volume = 0.45;
+
+      endingMusic
+        .play()
+        .then(() => {
+          musicStarted = true;
+
+          musicToggleBtn.textContent =
+            "Pause music";
+        })
+        .catch(() => {
+          musicToggleBtn.textContent =
+            "Music unavailable";
+        });
+
+      return;
+    }
+
+    endingMusic.pause();
+
+    musicStarted = false;
+
+    musicToggleBtn.textContent =
+      "Play music";
+  }
+);
+
+/* ==================================================
+   EMAIL
 ================================================== */
 
 function createSubmissionId() {
   if (
     window.crypto &&
     typeof window.crypto.randomUUID ===
-    "function"
+      "function"
   ) {
     return window.crypto.randomUUID();
   }
@@ -1205,7 +1288,7 @@ function emailEndpointIsConfigured() {
 
 async function sendResultsToEmail() {
   if (resultsSent) {
-    return;
+    return true;
   }
 
   if (!emailEndpointIsConfigured()) {
@@ -1215,15 +1298,13 @@ async function sendResultsToEmail() {
     emailStatus.className =
       "email-status error";
 
-    return;
+    return false;
   }
 
   if (!currentSubmissionId) {
     currentSubmissionId =
       createSubmissionId();
   }
-
-  resultsSent = true;
 
   emailStatus.textContent =
     "Sending your choices to me...";
@@ -1288,11 +1369,15 @@ async function sendResultsToEmail() {
       }
     );
 
+    resultsSent = true;
+
     emailStatus.textContent =
-      "Your choices were sent to me. I’ll handle the rest. ♥";
+      "Your choices were sent to me. ♥";
 
     emailStatus.className =
       "email-status success";
+
+    return true;
   } catch (error) {
     resultsSent = false;
 
@@ -1302,7 +1387,12 @@ async function sendResultsToEmail() {
     emailStatus.className =
       "email-status error";
 
-    console.error(error);
+    console.error(
+      "Submission error:",
+      error
+    );
+
+    return false;
   }
 }
 
@@ -1312,7 +1402,7 @@ async function sendResultsToEmail() {
 
 nextBtn.addEventListener(
   "click",
-  () => {
+  async () => {
     const category =
       dateCategories[currentStep];
 
@@ -1322,11 +1412,11 @@ nextBtn.addEventListener(
       return;
     }
 
-    const isLastStep =
+    const isLast =
       currentStep ===
-      dateCategories.length - 1;
+        dateCategories.length - 1;
 
-    if (!isLastStep) {
+    if (!isLast) {
       currentStep += 1;
 
       renderCurrentStep();
@@ -1341,13 +1431,22 @@ nextBtn.addEventListener(
 
     nextBtn.disabled = true;
 
+    prepareEndingMusic();
+
     renderFinalTicket();
 
     showScreen(finalScreen);
 
-    createHeartConfetti(48);
+    createHeartConfetti(42);
 
-    sendResultsToEmail();
+    const submitted =
+      await sendResultsToEmail();
+
+    if (submitted) {
+      await wait(1300);
+
+      startCinematicEnding();
+    }
   }
 );
 
@@ -1360,47 +1459,208 @@ function renderFinalTicket() {
 
   dateCategories.forEach(
     (category) => {
-      const selectedChoice =
+      const selected =
         selections[category.key];
 
-      if (!selectedChoice) {
+      if (!selected) {
         return;
       }
 
-      const summaryItem =
+      const item =
         document.createElement(
           "article"
         );
 
-      summaryItem.className =
+      item.className =
         "summary-item";
 
-      summaryItem.innerHTML = `
+      item.innerHTML = `
         <img
-          src="${selectedChoice.image}"
-          alt="${selectedChoice.name}"
+          src="${selected.image}"
+          alt="${selected.name}"
         >
 
         <div class="summary-item-copy">
-          <span>
-            ${category.label}
-          </span>
-
-          <strong>
-            ${selectedChoice.name}
-          </strong>
+          <span>${category.label}</span>
+          <strong>${selected.name}</strong>
         </div>
       `;
 
-      summaryGrid.appendChild(
-        summaryItem
-      );
+      summaryGrid.appendChild(item);
     }
   );
 }
 
 /* ==================================================
-   SHARE CHOICES
+   CINEMATIC ENDING
+================================================== */
+
+function resetCinematicEnding() {
+  cinematicOverlay.classList.remove(
+    "ending"
+  );
+
+  cinematicKicker.classList.remove(
+    "visible"
+  );
+
+  cinematicLines.forEach((line) => {
+    line.classList.remove(
+      "visible",
+      "dimmed"
+    );
+  });
+
+  cinematicSealStage.classList.remove(
+    "visible"
+  );
+
+  cinematicFinalCaption.classList.remove(
+    "visible"
+  );
+}
+
+async function startCinematicEnding() {
+  if (cinematicRunning) {
+    return;
+  }
+
+  cinematicRunning = true;
+
+  resetCinematicEnding();
+
+  finalScreen.classList.remove(
+    "final-return"
+  );
+
+  finalTicket.classList.remove(
+    "sealed"
+  );
+
+  cinematicOverlay.classList.add(
+    "active"
+  );
+
+  cinematicOverlay.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.style.overflow =
+    "hidden";
+
+  fadeMusicIn();
+
+  await wait(850);
+
+  cinematicKicker.classList.add(
+    "visible"
+  );
+
+  await wait(900);
+
+  for (
+    let index = 0;
+    index < cinematicLines.length;
+    index += 1
+  ) {
+    if (index > 0) {
+      cinematicLines[
+        index - 1
+      ].classList.add(
+        "dimmed"
+      );
+    }
+
+    cinematicLines[
+      index
+    ].classList.add(
+      "visible"
+    );
+
+    const isFinalLine =
+      index ===
+      cinematicLines.length - 1;
+
+    await wait(
+      isFinalLine
+        ? 1900
+        : 1250
+    );
+  }
+
+  cinematicLines.forEach((line) => {
+    line.classList.add(
+      "dimmed"
+    );
+  });
+
+  cinematicLines[
+    cinematicLines.length - 1
+  ].classList.remove(
+    "dimmed"
+  );
+
+  await wait(700);
+
+  cinematicSealStage.classList.add(
+    "visible"
+  );
+
+  await wait(1200);
+
+  cinematicFinalCaption.classList.add(
+    "visible"
+  );
+
+  await wait(1900);
+
+  cinematicOverlay.classList.add(
+    "ending"
+  );
+
+  finalTicket.classList.add(
+    "sealed"
+  );
+
+  finalScreen.classList.add(
+    "final-return"
+  );
+
+  createHeartConfetti(55);
+
+  await wait(950);
+
+  cinematicOverlay.classList.remove(
+    "active",
+    "ending"
+  );
+
+  cinematicOverlay.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  document.body.style.overflow = "";
+
+  replayEndingBtn.classList.remove(
+    "hidden"
+  );
+
+  cinematicRunning = false;
+
+  endingHasPlayed = true;
+}
+
+replayEndingBtn.addEventListener(
+  "click",
+  () => {
+    startCinematicEnding();
+  }
+);
+
+/* ==================================================
+   SHARE
 ================================================== */
 
 function createShareMessage() {
@@ -1472,25 +1732,24 @@ shareBtn.addEventListener(
         return;
       }
 
-      const textArea =
+      const textarea =
         document.createElement(
           "textarea"
         );
 
-      textArea.value =
-        message;
+      textarea.value = message;
 
       document.body.appendChild(
-        textArea
+        textarea
       );
 
-      textArea.select();
+      textarea.select();
 
       document.execCommand(
         "copy"
       );
 
-      textArea.remove();
+      textarea.remove();
 
       copyStatus.textContent =
         "Date choices copied. Paste them into your chat. ♥";
@@ -1499,7 +1758,7 @@ shareBtn.addEventListener(
 );
 
 /* ==================================================
-   CHOOSE AGAIN
+   RESTART
 ================================================== */
 
 restartBtn.addEventListener(
@@ -1517,12 +1776,39 @@ restartBtn.addEventListener(
 
     currentSubmissionId = "";
 
-    copyStatus.textContent = "";
+    endingHasPlayed = false;
+
+    replayEndingBtn.classList.add(
+      "hidden"
+    );
+
+    finalTicket.classList.remove(
+      "sealed"
+    );
+
+    finalScreen.classList.remove(
+      "final-return"
+    );
 
     emailStatus.textContent = "";
 
     emailStatus.className =
       "email-status";
+
+    copyStatus.textContent = "";
+
+    endingMusic.pause();
+
+    endingMusic.currentTime = 0;
+
+    endingMusic.volume = 0;
+
+    musicStarted = false;
+
+    musicWasPrepared = false;
+
+    musicToggleBtn.textContent =
+      "Play music";
 
     renderCurrentStep();
 
@@ -1595,5 +1881,7 @@ function createHeartConfetti(
     heartConfetti.innerHTML = "";
   }, 5800);
 }
+
+/* Prepare first kiosk step */
 
 renderCurrentStep();
