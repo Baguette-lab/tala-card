@@ -1,6 +1,6 @@
-/* ==================================================
+/* ================================================
    PERSONAL DETAILS
-================================================== */
+================================================ */
 
 const CONFIG = {
   partnerName: "My Love",
@@ -8,20 +8,39 @@ const CONFIG = {
   anniversaryDate: "Our Anniversary"
 };
 
+/*
+Example:
 
-/* ==================================================
+const CONFIG = {
+  partnerName: "Tala",
+  yourName: "Tricia",
+  anniversaryDate: "August 18, 2026"
+};
+*/
+
+/* ================================================
    GOOGLE APPS SCRIPT
-================================================== */
+================================================ */
+
+/*
+Paste the deployed Google Apps Script URL here.
+
+It must begin with:
+https://script.google.com/macros/s/
+
+It must end with:
+/exec
+*/
 
 const EMAIL_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbxPNYIO9_Gt2hZ-9RqKynQETwRYv8jrYgKbQ7_i4Hsu8wyDJd-4rIa9uh59zXTqwmTN/exec";
+  "https://script.google.com/macros/s/AKfycbypLTVlIpLnwAAxv2jOPWqNpvUp0UPIEXOtGeZ7__Da6ejaZ4ct3iAo6NVjKwW9X_gc/exec";
 
 const EMAIL_FORM_KEY =
   "anniversary-date-card-v1";
 
-/* ==================================================
+/* ================================================
    DATE OPTIONS
-================================================== */
+================================================ */
 
 const dateCategories = [
   {
@@ -290,9 +309,9 @@ const dateCategories = [
   }
 ];
 
-/* ==================================================
+/* ================================================
    ELEMENTS
-================================================== */
+================================================ */
 
 const screens =
   document.querySelectorAll(".screen");
@@ -369,14 +388,14 @@ const summaryGrid =
 const shareBtn =
   document.getElementById("shareBtn");
 
-const restartBtn =
-  document.getElementById("restartBtn");
-
 const replayEndingBtn =
   document.getElementById("replayEndingBtn");
 
 const musicToggleBtn =
   document.getElementById("musicToggleBtn");
+
+const restartBtn =
+  document.getElementById("restartBtn");
 
 const copyStatus =
   document.getElementById("copyStatus");
@@ -410,9 +429,9 @@ const endingMusic =
 const heartConfetti =
   document.getElementById("heartConfetti");
 
-/* ==================================================
+/* ================================================
    STATE
-================================================== */
+================================================ */
 
 let currentStep = 0;
 
@@ -430,27 +449,39 @@ let currentSubmissionId = "";
 
 let cinematicRunning = false;
 
-let endingHasPlayed = false;
-
-let musicStarted = false;
-
-let musicWasPrepared = false;
+let musicPrepared = false;
 
 const selections = {};
 
-/* ==================================================
-   HELPERS
-================================================== */
+/* ================================================
+   GENERAL HELPERS
+================================================ */
 
 function wait(milliseconds) {
   return new Promise((resolve) => {
-    setTimeout(resolve, milliseconds);
+    window.setTimeout(
+      resolve,
+      milliseconds
+    );
   });
 }
 
-/* ==================================================
+function showScreen(targetScreen) {
+  screens.forEach((screen) => {
+    screen.classList.remove("active");
+  });
+
+  targetScreen.classList.add("active");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+/* ================================================
    PERSONAL DETAILS
-================================================== */
+================================================ */
 
 function applyPersonalDetails() {
   document
@@ -480,26 +511,9 @@ function applyPersonalDetails() {
 
 applyPersonalDetails();
 
-/* ==================================================
-   SCREEN NAVIGATION
-================================================== */
-
-function showScreen(targetScreen) {
-  screens.forEach((screen) => {
-    screen.classList.remove("active");
-  });
-
-  targetScreen.classList.add("active");
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-}
-
-/* ==================================================
-   ENVELOPE
-================================================== */
+/* ================================================
+   ENVELOPE TRANSITION
+================================================ */
 
 openEnvelopeBtn.addEventListener(
   "click",
@@ -514,7 +528,7 @@ openEnvelopeBtn.addEventListener(
       "opening"
     );
 
-    setTimeout(() => {
+    window.setTimeout(() => {
       animateLetterPopOut();
     }, 470);
   }
@@ -590,7 +604,7 @@ function animateLetterPopOut() {
     });
   });
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     letterScreen.classList.add(
       "letter-reveal"
     );
@@ -601,7 +615,7 @@ function animateLetterPopOut() {
       "0";
   }, 850);
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     floatingLetter.remove();
 
     previewLetter.style.opacity = "";
@@ -668,9 +682,9 @@ function getFullLetterTargetRectangle() {
   };
 }
 
-/* ==================================================
+/* ================================================
    RUNAWAY NO BUTTON
-================================================== */
+================================================ */
 
 function moveNoButton() {
   if (
@@ -786,7 +800,7 @@ function moveNoButton() {
         messages.length
     ];
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     noButtonMoving = false;
   }, 145);
 }
@@ -813,8 +827,6 @@ questionArea.addEventListener(
     const rectangle =
       noBtn.getBoundingClientRect();
 
-    const escapeDistance = 82;
-
     const nearestX =
       Math.max(
         rectangle.left,
@@ -839,7 +851,7 @@ questionArea.addEventListener(
         event.clientY - nearestY
       );
 
-    if (distance < escapeDistance) {
+    if (distance < 82) {
       moveNoButton();
     }
   }
@@ -879,7 +891,7 @@ questionArea.addEventListener(
     const rectangle =
       noBtn.getBoundingClientRect();
 
-    const distance = 48;
+    const extraDistance = 48;
 
     const directlyInside =
       touch.clientX >= rectangle.left &&
@@ -889,16 +901,20 @@ questionArea.addEventListener(
 
     const nearby =
       touch.clientX >=
-        rectangle.left - distance &&
+        rectangle.left -
+          extraDistance &&
 
       touch.clientX <=
-        rectangle.right + distance &&
+        rectangle.right +
+          extraDistance &&
 
       touch.clientY >=
-        rectangle.top - distance &&
+        rectangle.top -
+          extraDistance &&
 
       touch.clientY <=
-        rectangle.bottom + distance;
+        rectangle.bottom +
+          extraDistance;
 
     if (
       nearby &&
@@ -912,6 +928,11 @@ questionArea.addEventListener(
   }
 );
 
+/*
+The love-virus only starts when an actual
+click on the No button succeeds.
+*/
+
 noBtn.addEventListener(
   "click",
   (event) => {
@@ -921,9 +942,9 @@ noBtn.addEventListener(
   }
 );
 
-/* ==================================================
+/* ================================================
    LOVE VIRUS
-================================================== */
+================================================ */
 
 function triggerLoveVirus() {
   if (virusTriggered) {
@@ -936,6 +957,11 @@ function triggerLoveVirus() {
     "active"
   );
 
+  virusOverlay.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
   document.body.style.overflow =
     "hidden";
 
@@ -944,19 +970,24 @@ function triggerLoveVirus() {
       "100%";
   });
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     virusStatus.textContent =
       "Removing incompatible answer...";
   }, 900);
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     virusStatus.textContent =
       "Restoring the correct romantic option...";
   }, 1750);
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     virusOverlay.classList.remove(
       "active"
+    );
+
+    virusOverlay.setAttribute(
+      "aria-hidden",
+      "true"
     );
 
     document.body.style.overflow = "";
@@ -972,19 +1003,22 @@ function triggerLoveVirus() {
 
     virusProgressBar.style.width =
       "0";
+
+    virusStatus.textContent =
+      "Repairing answer...";
   }, 2900);
 }
 
-/* ==================================================
-   YES
-================================================== */
+/* ================================================
+   YES BUTTON
+================================================ */
 
 yesBtn.addEventListener(
   "click",
   () => {
     createHeartConfetti(36);
 
-    setTimeout(() => {
+    window.setTimeout(() => {
       currentStep = 0;
 
       renderCurrentStep();
@@ -994,9 +1028,9 @@ yesBtn.addEventListener(
   }
 );
 
-/* ==================================================
-   KIOSK
-================================================== */
+/* ================================================
+   DATE KIOSK
+================================================ */
 
 function renderCurrentStep() {
   const category =
@@ -1049,11 +1083,17 @@ function renderCurrentStep() {
       button.className =
         "option-card";
 
-      if (
+      button.setAttribute(
+        "aria-label",
+        `${option.name}. ${option.description}`
+      );
+
+      const isSelected =
         selectedOption &&
         selectedOption.name ===
-          option.name
-      ) {
+          option.name;
+
+      if (isSelected) {
         button.classList.add(
           "selected"
         );
@@ -1068,14 +1108,22 @@ function renderCurrentStep() {
             loading="lazy"
           >
 
-          <span class="option-check">
+          <span
+            class="option-check"
+            aria-hidden="true"
+          >
             ✓
           </span>
         </div>
 
         <div class="option-copy">
-          <h3>${option.name}</h3>
-          <p>${option.description}</p>
+          <h3>
+            ${option.name}
+          </h3>
+
+          <p>
+            ${option.description}
+          </p>
         </div>
       `;
 
@@ -1143,16 +1191,22 @@ backBtn.addEventListener(
   }
 );
 
-/* ==================================================
+/* ================================================
    MUSIC
-================================================== */
+================================================ */
+
+/*
+This is called directly from the final
+button click. That gives the browser a user
+interaction before the cinematic sequence.
+*/
 
 function prepareEndingMusic() {
-  if (musicWasPrepared) {
+  if (musicPrepared) {
     return;
   }
 
-  musicWasPrepared = true;
+  musicPrepared = true;
 
   endingMusic.volume = 0;
 
@@ -1166,14 +1220,10 @@ function prepareEndingMusic() {
   ) {
     playPromise
       .then(() => {
-        musicStarted = true;
-
         musicToggleBtn.textContent =
           "Pause music";
       })
       .catch(() => {
-        musicStarted = false;
-
         musicToggleBtn.textContent =
           "Play music";
       });
@@ -1181,46 +1231,47 @@ function prepareEndingMusic() {
 }
 
 function fadeMusicIn() {
+  const startFade = () => {
+    let volume =
+      endingMusic.volume;
+
+    const interval =
+      window.setInterval(() => {
+        volume =
+          Math.min(
+            0.55,
+            volume + 0.05
+          );
+
+        endingMusic.volume =
+          volume;
+
+        if (volume >= 0.55) {
+          window.clearInterval(
+            interval
+          );
+        }
+      }, 90);
+  };
+
   if (endingMusic.paused) {
     endingMusic
       .play()
       .then(() => {
-        musicStarted = true;
-
         musicToggleBtn.textContent =
           "Pause music";
 
-        increaseMusicVolume();
+        startFade();
       })
       .catch(() => {
-        musicStarted = false;
+        musicToggleBtn.textContent =
+          "Play music";
       });
 
     return;
   }
 
-  increaseMusicVolume();
-}
-
-function increaseMusicVolume() {
-  let volume =
-    endingMusic.volume;
-
-  const interval =
-    setInterval(() => {
-      volume =
-        Math.min(
-          0.55,
-          volume + 0.05
-        );
-
-      endingMusic.volume =
-        volume;
-
-      if (volume >= 0.55) {
-        clearInterval(interval);
-      }
-    }, 90);
+  startFade();
 }
 
 musicToggleBtn.addEventListener(
@@ -1232,8 +1283,6 @@ musicToggleBtn.addEventListener(
       endingMusic
         .play()
         .then(() => {
-          musicStarted = true;
-
           musicToggleBtn.textContent =
             "Pause music";
         })
@@ -1247,16 +1296,14 @@ musicToggleBtn.addEventListener(
 
     endingMusic.pause();
 
-    musicStarted = false;
-
     musicToggleBtn.textContent =
       "Play music";
   }
 );
 
-/* ==================================================
-   EMAIL
-================================================== */
+/* ================================================
+   EMAIL SUBMISSION
+================================================ */
 
 function createSubmissionId() {
   if (
@@ -1293,7 +1340,7 @@ async function sendResultsToEmail() {
 
   if (!emailEndpointIsConfigured()) {
     emailStatus.textContent =
-      "Email sending is not configured yet.";
+      "Email is not configured. Paste your Apps Script /exec URL into script.js.";
 
     emailStatus.className =
       "email-status error";
@@ -1382,13 +1429,13 @@ async function sendResultsToEmail() {
     resultsSent = false;
 
     emailStatus.textContent =
-      "Your choices could not be sent. Please send me a screenshot.";
+      "The choices could not be sent. Please send a screenshot instead.";
 
     emailStatus.className =
       "email-status error";
 
     console.error(
-      "Submission error:",
+      "Email submission error:",
       error
     );
 
@@ -1396,9 +1443,9 @@ async function sendResultsToEmail() {
   }
 }
 
-/* ==================================================
+/* ================================================
    NEXT BUTTON
-================================================== */
+================================================ */
 
 nextBtn.addEventListener(
   "click",
@@ -1431,6 +1478,11 @@ nextBtn.addEventListener(
 
     nextBtn.disabled = true;
 
+    /*
+      Prepare the music while this click still
+      counts as a user interaction.
+    */
+
     prepareEndingMusic();
 
     renderFinalTicket();
@@ -1442,6 +1494,11 @@ nextBtn.addEventListener(
     const submitted =
       await sendResultsToEmail();
 
+    /*
+      Start the cinematic ending after a
+      successful website submission.
+    */
+
     if (submitted) {
       await wait(1300);
 
@@ -1450,9 +1507,9 @@ nextBtn.addEventListener(
   }
 );
 
-/* ==================================================
+/* ================================================
    FINAL TICKET
-================================================== */
+================================================ */
 
 function renderFinalTicket() {
   summaryGrid.innerHTML = "";
@@ -1481,8 +1538,13 @@ function renderFinalTicket() {
         >
 
         <div class="summary-item-copy">
-          <span>${category.label}</span>
-          <strong>${selected.name}</strong>
+          <span>
+            ${category.label}
+          </span>
+
+          <strong>
+            ${selected.name}
+          </strong>
         </div>
       `;
 
@@ -1491,9 +1553,9 @@ function renderFinalTicket() {
   );
 }
 
-/* ==================================================
+/* ================================================
    CINEMATIC ENDING
-================================================== */
+================================================ */
 
 function resetCinematicEnding() {
   cinematicOverlay.classList.remove(
@@ -1580,7 +1642,7 @@ async function startCinematicEnding() {
 
     const isFinalLine =
       index ===
-      cinematicLines.length - 1;
+        cinematicLines.length - 1;
 
     await wait(
       isFinalLine
@@ -1648,8 +1710,6 @@ async function startCinematicEnding() {
   );
 
   cinematicRunning = false;
-
-  endingHasPlayed = true;
 }
 
 replayEndingBtn.addEventListener(
@@ -1659,9 +1719,9 @@ replayEndingBtn.addEventListener(
   }
 );
 
-/* ==================================================
-   SHARE
-================================================== */
+/* ================================================
+   SHARE CHOICES
+================================================ */
 
 function createShareMessage() {
   const lines = [
@@ -1757,9 +1817,9 @@ shareBtn.addEventListener(
   }
 );
 
-/* ==================================================
-   RESTART
-================================================== */
+/* ================================================
+   CHOOSE AGAIN
+================================================ */
 
 restartBtn.addEventListener(
   "click",
@@ -1775,8 +1835,6 @@ restartBtn.addEventListener(
     resultsSent = false;
 
     currentSubmissionId = "";
-
-    endingHasPlayed = false;
 
     replayEndingBtn.classList.add(
       "hidden"
@@ -1803,9 +1861,7 @@ restartBtn.addEventListener(
 
     endingMusic.volume = 0;
 
-    musicStarted = false;
-
-    musicWasPrepared = false;
+    musicPrepared = false;
 
     musicToggleBtn.textContent =
       "Play music";
@@ -1816,9 +1872,9 @@ restartBtn.addEventListener(
   }
 );
 
-/* ==================================================
+/* ================================================
    CONFETTI
-================================================== */
+================================================ */
 
 function createHeartConfetti(
   amount = 30
@@ -1877,11 +1933,11 @@ function createHeartConfetti(
     );
   }
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     heartConfetti.innerHTML = "";
   }, 5800);
 }
 
-/* Prepare first kiosk step */
+/* Initial kiosk setup */
 
 renderCurrentStep();
